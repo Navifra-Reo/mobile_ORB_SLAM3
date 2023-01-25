@@ -118,11 +118,6 @@ public:
     void SetMapBad(Map* pMap);
     void RemoveBadMaps();
 
-    bool isInertial();
-    void SetInertialSensor();
-    void SetImuInitialized();
-    bool isImuInitialized();
-
     // Function for garantee the correction of serialization of this object
     void PreSave();
     void PostLoad();
@@ -139,6 +134,8 @@ public:
 
     long unsigned int GetNumLivedMP();
 
+    void SwitchCurrentMap(const int cam_Num);
+
 protected:
 
     std::set<Map*> mspMaps;
@@ -147,6 +144,8 @@ protected:
     std::vector<Map*> mvpBackupMaps;
 
     Map* mpCurrentMap;
+    Map* mpAgentMap_1;
+    Map* mpAgentMap_2;
 
     std::vector<GeometricCamera*> mvpCameras;
 

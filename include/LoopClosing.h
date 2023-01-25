@@ -56,7 +56,7 @@ public:
 
     void SetTracker(Tracking* pTracker);
 
-    void SetLocalMapper(LocalMapping* pLocalMapper);
+    void SetLocalMapper(LocalMapping* pLocalMapper1, LocalMapping* pLocalMapper2);
 
     // Main function
     void Run();
@@ -163,6 +163,10 @@ protected:
     ORBVocabulary* mpORBVocabulary;
 
     LocalMapping *mpLocalMapper;
+    LocalMapping *mpLocalMapper1;
+    LocalMapping *mpLocalMapper2;
+
+    bool localMapperSwitch;
 
     std::list<KeyFrame*> mlpLoopKeyFrameQueue;
 

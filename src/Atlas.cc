@@ -27,12 +27,18 @@ namespace ORB_SLAM3
 {
 
 Atlas::Atlas(){
-    mpCurrentMap = static_cast<Map*>(NULL);
+    mpAgentMap_1 = static_cast<Map*>(NULL);
+    mpAgentMap_2 = static_cast<Map*>(NULL);
+
+    mpCurrentMap = mpAgentMap_1;
 }
 
 Atlas::Atlas(int initKFid): mnLastInitKFidMap(initKFid), mHasViewer(false)
 {
-    mpCurrentMap = static_cast<Map*>(NULL);
+    mpAgentMap_1 = static_cast<Map*>(NULL);
+    mpAgentMap_2 = static_cast<Map*>(NULL);
+
+    mpCurrentMap = mpAgentMap_1;
     CreateNewMap();
 }
 
@@ -60,20 +66,31 @@ void Atlas::CreateNewMap()
     unique_lock<mutex> lock(mMutexAtlas);
     cout << "Creation of new map with id: " << Map::nNextId << endl;
     if(mpCurrentMap){
-        if(!mspMaps.empty() && mnLastInitKFidMap < mpCurrentMap->GetMaxKFid())
+        int a = mpAgentMap_1->GetMaxKFid();
+        int b = mpAgentMap_2->GetMaxKFid();
+        int c = a > b ? a : b;
+        if(!mspMaps.empty() && mnLastInitKFidMap <c)
             mnLastInitKFidMap = mpCurrentMap->GetMaxKFid()+1; //The init KF is the next of current maximum
 
-        mpCurrentMap->SetStoredMap();
-        cout << "Stored map with ID: " << mpCurrentMap->GetId() << endl;
+        mpAgentMap_1->SetStoredMap();
+        mpAgentMap_2->SetStoredMap();
+        cout << "Stored host map with ID: " << mpAgentMap_1->GetId() << endl;
+        cout << "Stored client map with ID: " << mpAgentMap_2->GetId() << endl;
 
         //if(mHasViewer)
         //    mpViewer->AddMapToCreateThumbnail(mpCurrentMap);
     }
     cout << "Creation of new map with last KF id: " << mnLastInitKFidMap << endl;
+    
+    mnLastInitKFidMap++;
+    mpAgentMap_1 = new Map(mnLastInitKFidMap);
+    mpAgentMap_2 = new Map(mnLastInitKFidMap-1);
 
-    mpCurrentMap = new Map(mnLastInitKFidMap);
-    mpCurrentMap->SetCurrentMap();
-    mspMaps.insert(mpCurrentMap);
+    mpAgentMap_1->SetCurrentMap();
+    mpAgentMap_2->SetCurrentMap();
+
+    mspMaps.insert(mpAgentMap_1);
+    mspMaps.insert(mpAgentMap_2);
 }
 
 void Atlas::ChangeMap(Map* pMap)
@@ -231,6 +248,8 @@ void Atlas::clearMap()
 {
     unique_lock<mutex> lock(mMutexAtlas);
     mpCurrentMap->clear();
+    mpAgentMap_1->clear();
+    mpAgentMap_2->clear();
 }
 
 void Atlas::clearAtlas()
@@ -243,7 +262,15 @@ void Atlas::clearAtlas()
     }*/
     mspMaps.clear();
     mpCurrentMap = static_cast<Map*>(NULL);
+    mpAgentMap_1 = static_cast<Map*>(NULL);
+    mpAgentMap_2 = static_cast<Map*>(NULL);
     mnLastInitKFidMap = 0;
+}
+
+void Atlas::SwitchCurrentMap(const int cam_Num)
+{
+    if(cam_Num==0) mpCurrentMap = mpAgentMap_1;
+    else mpCurrentMap = mpAgentMap_2;
 }
 
 Map* Atlas::GetCurrentMap()
@@ -273,30 +300,6 @@ void Atlas::RemoveBadMaps()
         pMap = static_cast<Map*>(NULL);
     }*/
     mspBadMaps.clear();
-}
-
-bool Atlas::isInertial()
-{
-    unique_lock<mutex> lock(mMutexAtlas);
-    return mpCurrentMap->IsInertial();
-}
-
-void Atlas::SetInertialSensor()
-{
-    unique_lock<mutex> lock(mMutexAtlas);
-    mpCurrentMap->SetInertialSensor();
-}
-
-void Atlas::SetImuInitialized()
-{
-    unique_lock<mutex> lock(mMutexAtlas);
-    mpCurrentMap->SetImuInitialized();
-}
-
-bool Atlas::isImuInitialized()
-{
-    unique_lock<mutex> lock(mMutexAtlas);
-    return mpCurrentMap->isImuInitialized();
 }
 
 void Atlas::PreSave()

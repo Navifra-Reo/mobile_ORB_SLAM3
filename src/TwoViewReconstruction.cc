@@ -108,7 +108,7 @@ namespace ORB_SLAM3
         // Wait until both threads have finished
         threadH.join();
         threadF.join();
-
+        cout << SH+SF << endl;
         // Compute ratio of scores
         if(SH+SF == 0.f) return false;
         float RH = SH/(SH+SF);
@@ -118,12 +118,12 @@ namespace ORB_SLAM3
         // Try to reconstruct from homography or fundamental depending on the ratio (0.40-0.45)
         if(RH>0.50) // if(RH>0.40)
         {
-            //cout << "Initialization from Homography" << endl;
+            cout << "Initialization from Homography" << endl;
             return ReconstructH(vbMatchesInliersH,H, mK,T21,vP3D,vbTriangulated,minParallax,50);
         }
         else //if(pF_HF>0.6)
         {
-            //cout << "Initialization from Fundamental" << endl;
+            cout << "Initialization from Fundamental" << endl;
             return ReconstructF(vbMatchesInliersF,F,mK,T21,vP3D,vbTriangulated,minParallax,50);
         }
     }
@@ -516,9 +516,13 @@ namespace ORB_SLAM3
         if(nGood4>0.7*maxGood)
             nsimilar++;
 
+        cout << "finding sequence\n";
+        cout << maxGood << ", " << nMinGood << endl;
+        cout << "nsimilar = " << nsimilar << endl;
         // If there is not a clear winner or not enough triangulated points reject initialization
-        if(maxGood<nMinGood || nsimilar>1)
+        if(maxGood<nMinGood/* || nsimilar>1*/)
         {
+            cout << "false" << endl;
             return false;
         }
 
@@ -531,6 +535,7 @@ namespace ORB_SLAM3
                 vbTriangulated = vbTriangulated1;
 
                 T21 = Sophus::SE3f(R1, t1);
+                cout << "true" << endl;
                 return true;
             }
         }else if(maxGood==nGood2)
@@ -541,6 +546,7 @@ namespace ORB_SLAM3
                 vbTriangulated = vbTriangulated2;
 
                 T21 = Sophus::SE3f(R2, t1);
+                cout << "true" << endl;
                 return true;
             }
         }else if(maxGood==nGood3)
@@ -551,6 +557,7 @@ namespace ORB_SLAM3
                 vbTriangulated = vbTriangulated3;
 
                 T21 = Sophus::SE3f(R1, t2);
+                cout << "true" << endl;
                 return true;
             }
         }else if(maxGood==nGood4)
@@ -561,10 +568,11 @@ namespace ORB_SLAM3
                 vbTriangulated = vbTriangulated4;
 
                 T21 = Sophus::SE3f(R2, t2);
+                cout << "true\n";
                 return true;
             }
         }
-
+        cout << "false\n";
         return false;
     }
 
@@ -724,12 +732,13 @@ namespace ORB_SLAM3
 
         if(secondBestGood<0.75*bestGood && bestParallax>=minParallax && bestGood>minTriangulated && bestGood>0.9*N)
         {
+            cout << "true\n";
             T21 = Sophus::SE3f(vR[bestSolutionIdx], vt[bestSolutionIdx]);
             vbTriangulated = bestTriangulated;
-
             return true;
         }
 
+        cout << "false\n";
         return false;
     }
 

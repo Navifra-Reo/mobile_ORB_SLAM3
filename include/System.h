@@ -118,7 +118,7 @@ public:
     // Proccess the given monocular frame and optionally imu data
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
     // Returns the camera pose (empty if tracking fails).
-    Sophus::SE3f TrackMonocular(const cv::Mat &im, const double &timestamp, const vector<IMU::Point>& vImuMeas = vector<IMU::Point>(), string filename="");
+    Sophus::SE3f TrackMonocular(const int cam_Num,const cv::Mat &im, const double &timestamp, const vector<IMU::Point>& vImuMeas = vector<IMU::Point>(), string filename="");
 
 
     // This stops local mapping thread (map building) and performs only camera tracking.
@@ -216,9 +216,13 @@ private:
     // It also decides when to insert a new keyframe, create some new MapPoints and
     // performs relocalization if tracking fails.
     Tracking* mpTracker;
+    Tracking* mpTracker0;
+    Tracking* mpTracker1;
 
     // Local Mapper. It manages the local map and performs local bundle adjustment.
     LocalMapping* mpLocalMapper;
+    LocalMapping* mpLocalMapper1;
+    LocalMapping* mpLocalMapper2;
 
     // Loop Closer. It searches loops with every new keyframe. If there is a loop it performs
     // a pose graph optimization and full bundle adjustment (in a new thread) afterwards.
@@ -232,7 +236,9 @@ private:
 
     // System threads: Local Mapping, Loop Closing, Viewer.
     // The Tracking thread "lives" in the main execution thread that creates the System object.
-    std::thread* mptLocalMapping;
+    std::thread* mptLocalMapping1;
+    std::thread* mptLocalMapping2;
+
     std::thread* mptLoopClosing;
     std::thread* mptViewer;
 

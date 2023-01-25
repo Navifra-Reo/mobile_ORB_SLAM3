@@ -58,7 +58,7 @@ class Tracking
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
+    Tracking(int camNum,System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq=std::string());
 
     ~Tracking();
@@ -69,11 +69,8 @@ public:
     bool ParseIMUParamFile(cv::FileStorage &fSettings);
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.
-    Sophus::SE3f GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRectRight, const double &timestamp, string filename);
-    Sophus::SE3f GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp, string filename);
-    Sophus::SE3f GrabImageMonocular(const cv::Mat &im, const double &timestamp, string filename);
 
-    void GrabImuData(const IMU::Point &imuMeasurement);
+    Sophus::SE3f GrabImageMonocular(const cv::Mat &im, const double &timestamp, string filename);
 
     void SetLocalMapper(LocalMapping* pLocalMapper);
     void SetLoopClosing(LoopClosing* pLoopClosing);
@@ -197,9 +194,6 @@ protected:
     // Main tracking function. It is independent of the input sensor.
     void Track();
 
-    // Map initialization for stereo and RGB-D
-    void StereoInitialization();
-
     // Map initialization for monocular
     void MonocularInitialization();
     //void CreateNewMapPoints();
@@ -209,7 +203,6 @@ protected:
     bool TrackReferenceKeyFrame();
     void UpdateLastFrame();
     bool TrackWithMotionModel();
-    bool PredictStateIMU();
 
     bool Relocalization();
 
@@ -224,10 +217,6 @@ protected:
     void CreateNewKeyFrame();
 
     // Perform preintegration from last frame
-    void PreintegrateIMU();
-
-    // Reset IMU biases and compute frame velocity
-    void ResetFrameIMU();
 
     bool mbMapUpdated;
 
@@ -352,6 +341,8 @@ protected:
     GeometricCamera* mpCamera, *mpCamera2;
 
     int initID, lastID;
+
+    int cam_Num;
 
     Sophus::SE3f mTlr;
 

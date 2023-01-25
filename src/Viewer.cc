@@ -268,15 +268,6 @@ void Viewer::Run()
             s_cam.Follow(Twc);
         }
 
-        if(menuTopView && mpMapDrawer->mpAtlas->isImuInitialized())
-        {
-            menuTopView = false;
-            bCameraView = false;
-            s_cam.SetProjectionMatrix(pangolin::ProjectionMatrix(1024,768,3000,3000,512,389,0.1,10000));
-            s_cam.SetModelViewMatrix(pangolin::ModelViewLookAt(0,0.01,50, 0,0,0,0.0,0.0, 1.0));
-            s_cam.Follow(Ow);
-        }
-
         if(menuLocalizationMode && !bLocalizationMode)
         {
             mpSystem->ActivateLocalizationMode();
